@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  
+  <mapper namespace = "org.zerock.mapper.BoardMapper">
+      <insert id = "create">
+      INSERT INTO TBL_BOARD(TITLE
+                                              , CONTENT
+                                              , WRITER)
+                VALUES( #{title}
+                             , #{content} 
+                             , #{writer}
+                             )
+      </insert>
+      
+      <select id = "read" resultType = "org.zerock.domain.BoardVO">
+        SELECT
+                     BNO 
+                   , TITLE
+                   , CONTENT
+                   , WRITER
+                   , REGDATE
+                   , VIEWCNT
+         FROM
+           TBL_BOARD
+           WHERE BNO = #{bno}
+      </select>
+      
+      <update id = "update">
+         UPDATE TBL_BOARD SET 
+                                                    TITLE        = #{title} 
+                                                  , CONTENT = #{content} 
+         WHERE BNO = #{bno}
+      </update>
+      
+      <delete id = "delete">
+         DELETE FROM TBL_BOARD WHERE BNO = #{bno}
+      </delete>
+      
+      <select id = "listAll"  resultType = "org.zerock.domain.BoardVO">
+       <![CDATA[
+             SELECT
+                          BNO
+                        , TITLE
+                        , CONTENT
+                        , WRITER
+                        , REGDATE
+                        , VIEWCNT
+               FROM TBL_BOARD
+             WHERE 1 = 1
+                  AND BNO > 0
+                    ORDER BY BNO DESC, REGDATE DESC        
+       ]]>
+      </select>
+      
+      <select id = "listCriteria" resultType = "BoardVO">
+         <![CDATA[
+             SELECT BNO
+                , TITLE
+                , CONTENT
+                , WRITER
+                , REGDATE
+                , VIEWCNT
+               FROM TBL_BOARD
+                 WHERE BNO > 0
+              ORDER BY BNO DESC
+                              , REGDATE DESC
+               LIMIT #{pageStart} , #{perPageNum}
+         ]]>
+      </select>
+      
+      <select id = "countPaging" resultType = "int">
+         <![CDATA[
+            SELECT
+               COUNT(bno)
+             FROM TBL_BOARD
+             WHERE BNO > 0
+         ]]>
+      </select>
+      
+      <sql id = "search">
+         <if test = "searchType != null">
+             <if test = "searchType == 't'.toString()">
+               AND TITLE LIKE CONCAT('%', #{keyword},'%')
+             </if>
+             <if test = "searchType == 'c'.toString()">
+               AND CONTENT LIKE CONCAT('%',#{keyword},'%')
+             </if>
+             <if test = "searchType == 'w'.toString()">
+               AND WRITER LIKE CONCAT('%',#{keyword},'%')
+             </if> 
+             <if test = "searchType == 'tc'.toString()">
+               AND (TITLE LIKE CONCAT('%',#{keyword},'%') OR CONTENT LIKE CONCAT('%', #{keyword},'%'))
+             </if>
+             <if test = "searchType == 'cw'.toString()">
+               AND (CONTENT LIKE CONCAT('%',#{keyword},'%') OR WRITER LIKE CONCAT('%',#{keyword}, '%'))
+             </if>
+             <if test = "searchType == 'tcw'.toString()">
+               AND (TITLE LIKE CONCAT('%' , #{keyword}, '%')
+                              OR CONTENT LIKE CONCAT('%', #{keyword}, '%')
+                              OR WRITER LIKE CONCAT('%',#{keyword},'%') 
+                        )
+             </if>
+         </if>
+      </sql>
+      
+      <select id = "listSearch" resultType = "BoardVO">
+         <![CDATA[
+            SELECT * 
+               FROM TBL_BOARD
+              WHERE BNO > 0
+         ]]>
+         
+         <include refid = "search"/>
+         
+           <![CDATA[
+              ORDER BY BNO DESC
+              LIMIT #{pageStart}, #{perPageNum}
+           ]]>
+      </select>
+      
+      <select id = "listSearchCount" resultType = "int">
+         <![CDATA[
+              SELECT COUNT(BNO)
+                FROM TBL_BOARD
+               WHERE BNO > 0
+         ]]>
+         
+         <include refid = "search"/>
+      </select>
+  </mapper>
